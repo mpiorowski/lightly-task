@@ -1,0 +1,26 @@
+# Use the official Rust image
+FROM rust:1
+
+# Set the working directory
+WORKDIR /app
+
+# Install cargo-watch for hot-reloading
+RUN cargo install cargo-watch
+
+# Copy the Cargo configuration files
+COPY ./server/Cargo.toml ./server/Cargo.lock ./
+
+# Create a dummy main.rs to build and cache dependencies
+RUN mkdir src && \
+    echo 'fn main() { println!("Building dependencies..."); }' > src/main.rs && \
+    cargo build --release && \
+    rm -rf src
+
+# Copy the rest of the server source code
+COPY ./server/src ./src
+
+# Expose the backend port
+EXPOSE 3000
+
+# Run the application with hot-reloading
+CMD ["cargo", "watch", "-x", "run"]
